@@ -325,6 +325,8 @@ export const DesignConfigurator = ({ configId, imageDimensions, imageUrl }: Prop
                                 size="sm"
                                 className="w-full"
                                 disabled={isPending}
+                                isLoading={isPending}
+                                loadingText="Saving"
                                 onClick={() => saveConfig({
                                     configId,
                                     color: options.color.value,

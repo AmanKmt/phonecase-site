@@ -1,11 +1,14 @@
 import Stripe from "stripe";
+import { Resend } from "resend";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
 import { stripe } from "@/lib/stripe";
 
-// const resend = new Resend(process.env.RESEND_API_KEY);
+import { OrderReceivedEmail } from "@/components/emails/order-received-email";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
     try {
@@ -68,6 +71,25 @@ export async function POST(req: Request) {
                         },
                     },
                 },
+            });
+
+            await resend.emails.send({
+                from: 'CaseCobra <kumawataman6378@gmail.com>',
+                to: [event.data.object.customer_details.email],
+                subject: 'Thanks for your order!',
+                react: OrderReceivedEmail({
+                    orderId,
+                    orderDate: updatedOrder.createdAt.toLocaleDateString(),
+                    // @ts-ignore
+                    shippingAddress: {
+                        name: session.customer_details!.name!,
+                        city: shippingAddress!.city!,
+                        country: shippingAddress!.country!,
+                        postalCode: shippingAddress!.postal_code!,
+                        street: shippingAddress!.line1!,
+                        state: shippingAddress!.state,
+                    },
+                }),
             });
         }
 
